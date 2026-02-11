@@ -44,10 +44,11 @@ def index_to_position(index: Index, strides: Strides) -> int:
     """
 
     # TODO: Implement for Task 2.1.
-    position = 0
-    for i, stride in zip(index, strides):
-        position += i * stride
-    return position
+    return int(np.dot(index, strides))
+    # position = 0
+    # for i, stride in zip(index, strides):
+    #     position += i * stride
+    # return position
     # raise NotImplementedError("Need to implement for Task 2.1")
 
 
@@ -115,20 +116,33 @@ def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
         IndexingError : if cannot broadcast
     """
     # TODO: Implement for Task 2.2.
-    reversed_shape1 = list(reversed(shape1))
-    reversed_shape2 = list(reversed(shape2))
-    broadcasted_shape = []
+    max_len = max(len(shape1), len(shape2))
+    s1 = [1] * (max_len - len(shape1)) + list(shape1)
+    s2 = [1] * (max_len - len(shape2)) + list(shape2)
+    s = [0] * max_len
 
-    for i in range(max(len(shape1), len(shape2))):
-        dim1 = reversed_shape1[i] if i < len(shape1) else 1
-        dim2 = reversed_shape2[i] if i < len(shape2) else 1
-
-        if dim1 == dim2 or dim1 == 1 or dim2 == 1:
-            broadcasted_shape.insert(0, max(dim1, dim2))
+    for i in range(max_len):
+        if s1[i] == s2[i] or s1[i] == 1 or s2[i] == 1:
+            s[i] = max(s1[i], s2[i])
         else:
             raise IndexingError(f"Shapes {shape1} and {shape2} cannot be broadcast")
         
-    return tuple(broadcasted_shape)
+    return tuple(s)
+
+    # reversed_shape1 = list(reversed(shape1))
+    # reversed_shape2 = list(reversed(shape2))
+    # broadcasted_shape = []
+
+    # for i in range(max(len(shape1), len(shape2))):
+    #     dim1 = reversed_shape1[i] if i < len(shape1) else 1
+    #     dim2 = reversed_shape2[i] if i < len(shape2) else 1
+
+    #     if dim1 == dim2 or dim1 == 1 or dim2 == 1:
+    #         broadcasted_shape.insert(0, max(dim1, dim2))
+    #     else:
+    #         raise IndexingError(f"Shapes {shape1} and {shape2} cannot be broadcast")
+        
+    # return tuple(broadcasted_shape)
     # raise NotImplementedError("Need to implement for Task 2.2")
 
 

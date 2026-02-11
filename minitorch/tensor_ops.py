@@ -269,19 +269,14 @@ def tensor_map(fn: Callable[[float], float]) -> Any:
         in_strides: Strides,
     ) -> None:
         # TODO: Implement for Task 2.3.
-        for out_index in range(len(out)):
-            # out: out ordinal -> out index 
-            out_multi_index = [0] * len(out_shape)
-            to_index(out_index, out_shape, out_multi_index)
+        out_index = [0] * len(out_shape)
+        in_index = [0] * len(in_shape)
 
-            # in: broadcasting, out index -> in index
-            in_multi_index = [0] * len(in_shape)
-            broadcast_index(out_multi_index, out_shape, in_shape, in_multi_index)
-
-            # in index -> in ordinal
-            in_flat_index = index_to_position(in_multi_index, in_strides)
-
-            out[out_index] = fn(in_storage[in_flat_index])
+        for out_pos in range(len(out)):
+            to_index(out_pos, out_shape, out_index) # out index
+            broadcast_index(out_index, out_shape, in_shape, in_index) # in index
+            in_pos = index_to_position(in_index, in_strides) # in pos
+            out[out_pos] = fn(in_storage[in_pos])
         # raise NotImplementedError("Need to implement for Task 2.3")
 
     return _map
@@ -332,19 +327,20 @@ def tensor_zip(fn: Callable[[float, float], float]) -> Any:
         b_strides: Strides,
     ) -> None:
         # TODO: Implement for Task 2.3.
-        for out_index in range(len(out)):
-            out_multi_index = [0] * len(out_shape)
-            to_index(out_index, out_shape, out_multi_index)
+        out_index = [0] * len(out_shape)
+        a_index = [0] * len(a_shape)
+        b_index = [0] * len(b_shape)
 
-            a_multi_index = [0] * len(a_shape)
-            broadcast_index(out_multi_index, out_shape, a_shape, a_multi_index)
-            a_flat_index = index_to_position(a_multi_index, a_strides)
+        for out_pos in range(len(out)):
+            to_index(out_pos, out_shape, out_index) # out_index
 
-            b_multi_index = [0] * len(b_shape)
-            broadcast_index(out_multi_index, out_shape, b_shape, b_multi_index)
-            b_flat_index = index_to_position(b_multi_index, b_strides)
-            
-            out[out_index] = fn(a_storage[a_flat_index], b_storage[b_flat_index])
+            broadcast_index(out_index, out_shape, a_shape, a_index) # a_index
+            broadcast_index(out_index, out_shape, b_shape, b_index)
+
+            a_pos = index_to_position(a_index, a_strides) # a_pos
+            b_pos = index_to_position(b_index, b_strides)
+
+            out[out_pos] = fn(a_storage[a_pos], b_storage[b_pos])
         # raise NotImplementedError("Need to implement for Task 2.3")
 
     return _zip
@@ -381,22 +377,16 @@ def tensor_reduce(fn: Callable[[float, float], float]) -> Any:
         reduce_dim: int,
     ) -> None:
         # TODO: Implement for Task 2.3.
-        for out_index in range(len(out)):
-            out_multi_index = [0] * len(out_shape)
-            to_index(out_index, out_shape, out_multi_index)
+        out_index = [0] * len(out_shape)
+
+        for out_pos in range(len(out)): # len(out) < len(a_storage)
+            to_index(out_pos, out_shape, out_index) # out_index
+            a_index = out_index
             
-            res = 0.0
             for i in range(a_shape[reduce_dim]):
-                a_multi_index = out_multi_index[:]
-                a_multi_index[reduce_dim] = i
-                a_flat_index = index_to_position(a_multi_index, a_strides)
-
-                if i == 0:
-                    res = a_storage[a_flat_index]
-                else:
-                    res = fn(res, a_storage[a_flat_index])
-
-            out[out_index] = res
+                a_index[reduce_dim] = i # a_index
+                a_pos = index_to_position(a_index, a_strides) # a_pos
+                out[out_pos] = fn(out[out_pos], a_storage[a_pos])
         # raise NotImplementedError("Need to implement for Task 2.3")
 
     return _reduce
