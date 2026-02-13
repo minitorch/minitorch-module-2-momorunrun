@@ -272,10 +272,11 @@ def tensor_map(fn: Callable[[float], float]) -> Any:
         out_index = [0] * len(out_shape)
         in_index = [0] * len(in_shape)
 
-        for out_pos in range(len(out)):
-            to_index(out_pos, out_shape, out_index) # out index
+        for i in range(len(out)):
+            to_index(i, out_shape, out_index) # out index
             broadcast_index(out_index, out_shape, in_shape, in_index) # in index
             in_pos = index_to_position(in_index, in_strides) # in pos
+            out_pos = index_to_position(out_index, out_strides) # out pos
             out[out_pos] = fn(in_storage[in_pos])
         # raise NotImplementedError("Need to implement for Task 2.3")
 
@@ -331,14 +332,15 @@ def tensor_zip(fn: Callable[[float, float], float]) -> Any:
         a_index = [0] * len(a_shape)
         b_index = [0] * len(b_shape)
 
-        for out_pos in range(len(out)):
-            to_index(out_pos, out_shape, out_index) # out_index
+        for i in range(len(out)):
+            to_index(i, out_shape, out_index) # out_index
 
             broadcast_index(out_index, out_shape, a_shape, a_index) # a_index
             broadcast_index(out_index, out_shape, b_shape, b_index)
 
             a_pos = index_to_position(a_index, a_strides) # a_pos
             b_pos = index_to_position(b_index, b_strides)
+            out_pos = index_to_position(out_index, out_strides)
 
             out[out_pos] = fn(a_storage[a_pos], b_storage[b_pos])
         # raise NotImplementedError("Need to implement for Task 2.3")
@@ -379,8 +381,9 @@ def tensor_reduce(fn: Callable[[float, float], float]) -> Any:
         # TODO: Implement for Task 2.3.
         out_index = [0] * len(out_shape)
 
-        for out_pos in range(len(out)): # len(out) < len(a_storage)
-            to_index(out_pos, out_shape, out_index) # out_index
+        for j in range(len(out)): # len(out) < len(a_storage)
+            to_index(j, out_shape, out_index) # out_index
+            out_pos = index_to_position(out_index, out_strides)
             a_index = out_index
             
             for i in range(a_shape[reduce_dim]):
