@@ -22,7 +22,13 @@ def central_difference(f: Any, *vals: Any, arg: int = 0, epsilon: float = 1e-6) 
     Returns:
         An approximation of $f'_i(x_0, \ldots, x_{n-1})$
     """
-    raise NotImplementedError("Need to include this file from past assignment.")
+    # TODO: Implement for Task 1.1.
+    args_plus = list(vals)
+    args_minus = list(vals)
+    args_plus[arg] = args_plus[arg] + epsilon
+    args_minus[arg] = args_minus[arg] - epsilon
+    return (f(*args_plus) - f(*args_minus)) / (2.0 * epsilon)
+    # raise NotImplementedError("Need to implement for Task 1.1")
 
 
 variable_count = 1
@@ -60,7 +66,28 @@ def topological_sort(variable: Variable) -> Iterable[Variable]:
     Returns:
         Non-constant Variables in topological order starting from the right.
     """
-    raise NotImplementedError("Need to include this file from past assignment.")
+    # TODO: Implement for Task 1.4.
+    res = []
+    visited = set()
+
+    def traverse(var: Variable) -> None:
+        if var.unique_id in visited or var.is_constant():
+            return
+        visited.add(var.unique_id)
+        for parent in var.parents:
+            traverse(parent)
+        res.append(var)
+
+    traverse(variable)
+    return reversed(res)
+
+    # alternatively
+    # res.insert(0, var)
+    # no need to 'reversed'
+
+    # var.parents == var.history.inputs
+
+    # raise NotImplementedError("Need to implement for Task 1.4")
 
 
 def backpropagate(variable: Variable, deriv: Any) -> None:
@@ -74,7 +101,22 @@ def backpropagate(variable: Variable, deriv: Any) -> None:
 
     No return. Should write to its results to the derivative values of each leaf through `accumulate_derivative`.
     """
-    raise NotImplementedError("Need to include this file from past assignment.")
+    # TODO: Implement for Task 1.4.
+    topo_variables = topological_sort(variable)
+    var_deriv = {}
+    var_deriv[variable.unique_id] = deriv
+
+    for x_v in topo_variables:
+        x_d = var_deriv.get(x_v.unique_id, 0.0)
+
+        if x_v.is_leaf():
+            x_v.accumulate_derivative(x_d)
+        else:
+            for x_inputs_v, x_inputs_grad in x_v.chain_rule(x_d):
+                if x_inputs_v.unique_id not in var_deriv:
+                    var_deriv[x_inputs_v.unique_id] = 0.0
+                var_deriv[x_inputs_v.unique_id] += x_inputs_grad
+    # raise NotImplementedError("Need to implement for Task 1.4")
 
 
 @dataclass
